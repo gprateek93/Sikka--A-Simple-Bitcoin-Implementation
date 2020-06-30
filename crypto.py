@@ -15,7 +15,7 @@ def generate_key():
 def sign_message(message = "", keyPair = None):
     '''Arguments - message: Type = string, default value = ""
                    keyPair: Type = an RSA key pair object, default value = None
-       This function is used to sign the given message  using the RSA private key that can be extracted from the key pair object.''''
+       This function is used to sign the given message  using the RSA private key that can be extracted from the key pair object.'''
     if keyPair == None:
         return None
     hash = int.from_bytes(generate_hash(message),byteorder = "big")
