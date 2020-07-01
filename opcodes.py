@@ -1,5 +1,5 @@
-from cyrpto import generate_hash
-
+# from crypto import generate_hash
+import hashlib
 # to add an opcode:
 # add it to the opcode list
 # create a method that only takes a single argument 'stack' and returns 'stack'
@@ -39,11 +39,11 @@ def verify(stack):
 
 def hash160(stack):
 	# compute hash (SHA-256) of the TOS and place is back
-	# m = hashlib.sha256()
-	# m.update(bytes(stack.pop(), encoding='UTF-8'))
-	# stack.append(m.hexdigest())
-	m = stack.pop()
-	stack.append(generate_hash(m))
+	# m = stack.pop()
+	# stack.append(generate_hash(m))
+	m = hashlib.sha256()
+	m.update(bytes(stack.pop(), encoding='UTF-8'))
+	stack.append(m.hexdigest())
 	return stack
 
 
