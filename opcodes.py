@@ -4,6 +4,7 @@ import hashlib
 # add it to the opcode list
 # create a method that only takes a single argument 'stack' and returns 'stack'
 # add the function mapping in opcode2method dictionary at the end of the file
+#create method to execute the script which takes the transaction also as input.
 
 opcode_list = ['OP_CHECKSIG', 'OP_EQUAL', 'OP_DUP', 'OP_HASH160', 'OP_VERIFY', 'OP_EQAULVERIFY', 'OP_CHECKMULTISIG']
 
