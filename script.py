@@ -1,6 +1,4 @@
-from opcodes import *
-import opcodes
-from inspect import getmembers
+from opcodes import is_op, opcode2method
 
 # expects a stack from the caller.
 def exectue_script(script, stack):
@@ -21,9 +19,6 @@ if __name__ == "__main__":
 	stack = []
 	stack = exectue_script(s, stack)
 	print(stack)
-
-	# print(type(dir(opcodes)))
-	# print(type(getmembers(opcodes)))
 
 
 
