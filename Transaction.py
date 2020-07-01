@@ -14,11 +14,20 @@ class Transaction:
             self.value = value
             self.pubkey = pubkey
     
-    def __init__(self,version,lock_time):
-        self.version = version
-        self.inputs = []
-        self.outputs = []
-        self.lock_time = lock_time
+    def __init__(self,version = 0,lock_time = 0, coin = -1, address = None):
+        if(coin == -1):
+            self.coinbase = False
+            self.version = version
+            self.inputs = []
+            self.outputs = []
+            self.lock_time = lock_time
+        else:
+            self.coinbase = True
+            self.inputs = []
+            self.outputs = []
+            self.add_output(address, coin)
+            self.version = version
+            self.lock_time = lock_time
     
     def add_input(self, prev_hash, index):
         inp = Transaction.Input(prev_hash,index)
@@ -51,5 +60,26 @@ class Transaction:
         return rawTx
 
     def finishTx(self):
-        self.hash  = crypto.generate_hash(self.getRawTx())
+        self.hash  = hex(crypto.generate_hash(self.getRawTx()))
+
+    def getRawSig(self):
+        rawTx = ""
+        rawTx+= str(self.version)
+        for inp in self.inputs:
+            if inp.prev_hash is not None:
+                rawTx += str(inp.prev_hash)
+            if inp.index is not None:
+                rawTx += str(inp.index)
+        for out in self.outputs:
+            if out.value is not None:
+                rawTx += str(out.value)
+            if out.pubkey is not None:
+                rawTx += str(out.pubkey)
+        rawTx += self.lock_time
+        rawTx = bytes(rawTx , "utf-8")
+        return rawTx
+
+    def signTransaction(self):
+        sig_data = self.getRawSig()
+        #learn about number of inputs
     
