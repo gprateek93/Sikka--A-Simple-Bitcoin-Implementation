@@ -22,6 +22,7 @@ class Transaction:
             self.outputs = []
             self.lock_time = lock_time
         else:
+            assert address is not None, "Address to a certain coinbase transaction can't be None"
             self.coinbase = True
             self.inputs = []
             self.outputs = []
@@ -29,6 +30,9 @@ class Transaction:
             self.version = version
             self.lock_time = lock_time
     
+    def coinbase(self):
+        return self.coinbase
+
     def add_input(self, prev_hash, index):
         inp = Transaction.Input(prev_hash,index)
         self.inputs.append(inp)
@@ -79,7 +83,8 @@ class Transaction:
         rawTx = bytes(rawTx , "utf-8")
         return rawTx
 
-    def signTransaction(self):
-        sig_data = self.getRawSig()
-        #learn about number of inputs
+    def addSignature(self, index = -1, script_sig = None):
+        assert index < len(self.inputs) and index >= 0 , "Index out of bounds"
+        assert script_sig is not None, "Unlocking script of a certain input can't be None"
+        self.inputs[index].addSignature(script_sig)
     
