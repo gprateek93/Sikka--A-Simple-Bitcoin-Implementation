@@ -42,7 +42,7 @@ class TransactionHandler:
                     utxo = UTXO(inp.prev_hash, inp.index)
                     self.utxopool.delete_utxo(utxo)
                 for i in tx.total_outputs():
-                    utxo = UTXO(tx.getHash, i)
+                    utxo = UTXO(tx.getHash(), i)
                     self.utxopool.add_UTXO(utxo)
         
         validTX = list(set(validTX))
