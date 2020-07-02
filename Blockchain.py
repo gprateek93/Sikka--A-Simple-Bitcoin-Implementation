@@ -36,6 +36,7 @@ class Blockchain:
         tx_handler = TransactionHandler(parent_node.utxo_pool)
         txs = block.get_transactions()
         validTXs = tx_handler.handleTxs(txs)
+        #block gets verified here
         if len(validTXs) != len(txs) :
             return False
         height = parent_node.height + 1

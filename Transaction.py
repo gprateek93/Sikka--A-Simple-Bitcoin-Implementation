@@ -77,11 +77,10 @@ class Transaction:
             if out.pubkey is not None:
                 rawTx += str(out.pubkey)
         rawTx += self.lock_time
-        rawTx = bytes(rawTx , "utf-8")
         return rawTx
 
     def finishTx(self):
-        self.hash  = hex(crypto.generate_hash(self.getRawTx()))
+        self.hash  = hex(crypto.generate_hash(bytes(self.getRawTx(),"utf-8")))
 
     def getRawSig(self):
         rawTx = ""
@@ -97,7 +96,6 @@ class Transaction:
             if out.pubkey is not None:
                 rawTx += str(out.pubkey)
         rawTx += self.lock_time
-        rawTx = bytes(rawTx , "utf-8")
         return rawTx
 
     def addSignature(self, index = -1, signature = None):
