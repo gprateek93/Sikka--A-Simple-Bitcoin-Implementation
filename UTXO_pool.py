@@ -1,5 +1,5 @@
 
-class UTXO_pool():
+class UTXO_pool:
 	def __init__(self):
 		self.mappings = dict({})
 

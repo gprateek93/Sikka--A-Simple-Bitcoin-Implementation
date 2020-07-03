@@ -1,7 +1,7 @@
 from functools import total_ordering
 
 @total_ordering
-class UTXO():
+class UTXO:
 	def __init__(self, txn_hash, index):
 		self.txn_hash = txn_hash
 		self.index = index
