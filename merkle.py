@@ -1,13 +1,13 @@
 import Transaction
-
+from constants import merkle_arity
 class MerkleNode:
     def __init__(self, hash = ""):
         self.hash = hash
         self.children  = []
 
 class MerkleTree:
-    def __init__(self,airity = 2, transactions = []):
-        self.airity = airity
+    def __init__(self, transactions = []):
+        self.airity = merkle_arity
         self.transactions = transactions
         node_list = self.tx_nodes()
         self.constructTree(node_list)

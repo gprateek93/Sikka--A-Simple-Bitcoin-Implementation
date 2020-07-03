@@ -1,9 +1,10 @@
 import Transaction
 import merkle
 from hashlib import sha256
+from constants import merkle_arity
 class Block:
 
-	def __init__(self, prev_hash, address, merkle_arity=2):
+	def __init__(self, prev_hash, address):
 		self.coinbase_value = 25
 		self.__hash = None
 		self.__prev_block_hash = prev_hash
@@ -12,6 +13,8 @@ class Block:
 		self.__merkle_tree_root = None
 		self.__merkle_arity = merkle_arity
 		self.__nonce = 0
+		self.__address = address # public key of miner
+
 	
 	def get_coinbase_txn(self):
 		return self.__coinbase_txn
