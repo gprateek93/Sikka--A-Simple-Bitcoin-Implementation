@@ -1,9 +1,9 @@
 import UTXO
 import UTXO_pool
 import TransactionHandler
+from constants import max_branch_len_diff
 
 class Blockchain:
-    self.timer = 10
     class BlockNode:
         def __init__(self, block = None, parent = None, utxo_pool = None):
             self.block =  block
@@ -40,7 +40,7 @@ class Blockchain:
         if len(validTXs) != len(txs) :
             return False
         height = parent_node.height + 1
-        if (height <= self.maxheightnode.height - self.timer):
+        if (height <= self.maxheightnode.height - max_branch_len_diff):
             return False
         utxo_pool = tx_handler.utxo_pool
         self.addcoinbasetx(block=block, utxo_pool=utxo_pool)
