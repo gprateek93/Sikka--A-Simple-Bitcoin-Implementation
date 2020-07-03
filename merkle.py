@@ -35,7 +35,7 @@ class MerkleTree:
             # hash = hex(0)
             hash = ""
             for j in range(0,airity):
-                hash += tx_nodes[i+j].hash
+                hash += tx_nodes[i+j].hash[2:]
                 node.children.append(tx_nodes[i+j])
             node.hash = hash
             updated_nodes.append(node)
@@ -45,10 +45,10 @@ class MerkleTree:
             # hash = hex(0)
             hash = ""
             for i in range(m,0,-1):
-                hash += tx_nodes[-i].hash
+                hash += tx_nodes[-i].hash[2:]
                 node.children.append(tx_nodes[-i])
             for i in range(0,airity-m):
-                hash += tx_nodes[-1].hash
+                hash += tx_nodes[-1].hash[2:]
                 node.children.append(tx_nodes[-1])
             node.hash = hash
             updated_nodes.append(node)

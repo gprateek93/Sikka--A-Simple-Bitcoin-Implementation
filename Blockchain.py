@@ -40,7 +40,7 @@ class Blockchain:
         if len(validTXs) != len(txs) :
             return False
         height = parent_node.height + 1
-        if (height <= self.maxheightnode.height + self.timer):
+        if (height <= self.maxheightnode.height - self.timer):
             return False
         utxo_pool = tx_handler.utxo_pool
         self.addcoinbasetx(block=block, utxo_pool=utxo_pool)
