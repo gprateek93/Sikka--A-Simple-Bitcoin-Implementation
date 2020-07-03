@@ -50,6 +50,11 @@ class Blockchain:
         self.blockchain[block.getHash()] = block_node
         return True
 
+    def get_max_height_block(self):
+        return self.maxheightnode.block
+
+    def get_max_height_node_UTXO_pool():
+        return self.maxheightnode.utxo_pool
 
     def addTransaction(tx):
         self.tx_pool.addTransaction(tx)      
