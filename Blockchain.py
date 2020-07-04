@@ -2,7 +2,8 @@ import UTXO
 import UTXO_pool
 import TransactionHandler
 from constants import max_branch_len_diff
-
+# TODO Create a replace blockchain method. See Miner.consensus()
+# TODO Create a method Blockchain.contains_block(block) which returns True if block is added in block chain
 class Blockchain:
     class BlockNode:
         def __init__(self, block = None, parent = None, utxo_pool = None):
