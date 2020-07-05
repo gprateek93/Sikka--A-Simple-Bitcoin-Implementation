@@ -22,20 +22,19 @@ class Blockchain:
         utxo_pool = UTXO_pool()
         self.addcoinbasetx(genesis_block,utxo_pool)
         genesis_node = Blockchain.BlockNode(block= genesis_block, utxo_pool= utxo_pool)
-        #self.tx_pool = TX_pool() Make the transaction pool class
         self.maxheightnode = genesis_node
-        self.blockchain[genesis_block.getHash()] = genesis_node
+        self.blockchain[genesis_block.get_hash()] = genesis_node
 
 
     def addBlock(self, block = None):
-        prev_hash = block.getPrevHash()
+        prev_hash = block.get_prev_block_hash()
         if prev_hash == None:
             return False
         if prev_hash not in self.blockchain:
             return False
         parent_node = self.blockchain[prev_hash]
         tx_handler = TransactionHandler(parent_node.utxo_pool)
-        txs = block.get_transactions()
+        txs = block.get_all_transactions()
         validTXs = tx_handler.handleTxs(txs)
         #block gets verified here
         if len(validTXs) != len(txs) :
@@ -48,21 +47,27 @@ class Blockchain:
         block_node = Blockchain.BlockNode(block=block, parent=parent_node, utxo_pool=utxo_pool)
         if height > self.maxheightnode.height:
             self.maxheightnode = block_node
-        self.blockchain[block.getHash()] = block_node
+        self.blockchain[block.get_hash()] = block_node
         return True
 
     def get_max_height_block(self):
         return self.maxheightnode.block
 
-    def get_max_height_node_UTXO_pool():
-        return self.maxheightnode.utxo_pool
-
-    def addTransaction(tx):
-        self.tx_pool.addTransaction(tx)      
+    def get_max_height_node_UTXO_pool(self):
+        return self.maxheightnode.utxo_pool     
 
     def addcoinbasetx(self,block = None, utxo_pool = None):
-        coinbase = block.getCoinbase()
+        coinbase = block.get_coinbase_txn()
         for i in coinbase.total_outputs():
             out = coinbase.getOutput(i)
             utxo = UTXO(coinbase.getHash(), i)
             utxo_pool.add_UTXO(utxo, out)
+
+    def contains_block(self, block = None):
+        if block is None:
+            return False
+        else:
+            if block.get_hash() in self.blockchain:
+                return True
+            else:
+                return False
