@@ -1,15 +1,17 @@
-from constants import mining_effort, num_block_txns
+from constants import mining_effort, num_block_txns, max_neighbours
 from crypto import generate_key
+from MessageClass import Message
 import Block
 import TransactionHandler as TxnH
-import threading as th
-from threading import Lock
-from collections import deque
-from MessageClass import Message
+import logging
+
 from copy import deepcopy # check if deep copy works for classes and if it doesn't create a function in blockchain to give a copy of it
+from collections import deque
+import threading as th
+from threading import Lock, Thread
 
 class Miner:
-	def __init__(self, blockchain, miner_id, node_pool, node_type):
+	def __init__(self, blockchain, miner_id, seed_node_pool, node_type):
 
 		self.id  = miner_id # for logging
 		assert blockchain != None, 'Empty Blockchain received' 
@@ -21,13 +23,55 @@ class Miner:
 		# NodeID : (lock, queue)
 		# I think we should send seed nodes separately and add them only once they reply.
 		# That means no need for node pool
-		self.node_pool = node_pool # Nodes connected with this miner
-		
+		self.node_pool = dict({}) # Nodes connected with this miner
+		self.seed_node_pool = seed_node_pool
 		self.message_queue = deque()
 		self.lock = Lock()
 		self.__type = node_type # "SEED" / "NON-SEED"
 		self.received_blocks = set()
 		
+		self.consensus_thread_pool = dict({}) # node_id : thread_obj
+		self.run = 1
+		logging.basicConfig(filename=f'LOG-MINER-{self.id}.log', level=logging.DEBUG, format='%(asctime)s : %(levelname)s :Process- %(process)d %(processName)s: Thread- %(thread)d %(threadName)s: %(funcName)s : %(message)s')
+		logging.info(f'Miner {self.id} object Created')
+
+	# this is the function that will be called to run by the process
+	def spawn(self):
+		# make two threads
+		mine_thread = Thread(target=self.mine, name='Mining-'+str(self.id))
+		process_messsage_thread = Thread(target=self.process_messages, name='Processing-'+str(self.id))
+		logging.info(f'mining and message Threads created')
+		#send connect messages to seed_node_pool
+		for node_id in self.seed_node_pool:
+			m = Message('CONNECT_REQUEST', [self.id, 'SEED', self.lock, self.message_queue])
+			lock, Q = self.seed_node_pool(node_id)
+			self.send_message(node_id, m, lock, Q)
+			logging.info(f'CONNECT REQUEST sent to {node_id}')
+		#run the threads
+		while self.run:
+			process_messsage_thread.start()
+			mine_thread.start()
+			logging.info(f'Threads Started')
+			if len(self.node_pool) >= max_neighbours:
+				print('Done connecting with neighbours')				
+				self.run = 0
+
+	def mine(self):
+		# find / extract a block from the mine :D
+		found_block = self.find_block()
+		# consensus
+		pre_concensus_blockchain = deepcopy(self.blockchain)
+		blockchain_changed = False
+		self.consensus()
+		if len(pre_concensus_blockchain) < len(self.blockchain): # => Concensus failed
+			# put all the transactions in the mined block into the pending txn pool
+			# check for transactions that have been already covered in the blockchain
+			# remove them from pending txn pool
+		else: 
+			# concensus acheived
+			# broadcast_new_mined_block() to all neighbours
+
+
 	def found_golden_hash(self, block):
 		num_leading_zeros = '0' * mining_effort
 		block_hash = block.get_hash()[2:] # becasue hex string
@@ -57,21 +101,6 @@ class Miner:
 		current_block.construct_merkle_tree()
 		return current_block
 
-	def mine(self):
-
-		# find / extract a block from the mine :D
-		found_block = self.find_block()
-		# consensus
-		pre_concensus_blockchain = deepcopy(self.blockchain)
-		blockchain_changed = False
-		self.consensus()
-		if len(pre_concensus_blockchain) < len(self.blockchain): # => Concensus failed
-			# put all the transactions in the mined block into the pending txn pool
-			# check for transactions that have been already covered in the blockchain
-			# remove them from pending txn pool
-		else: 
-			# concensus acheived
-			# broadcast_new_mined_block() to all neighbours
 
 
 	def find_block(self):		
@@ -93,7 +122,7 @@ class Miner:
 	def consensus(self):
 		# get the blockchain of neighbours (threads)
 		for node_id in self.node_pool:
-			self.send_message(Message('REQUEST_BLOCKCHAIN', [self.id]))
+			self.send_message(node_id, Message('REQUEST_BLOCKCHAIN', [self.id]))
 			# Now wait for the node to reply with their blockchain
 			# it will be replaced iff a longer valid block chain is found
 
@@ -201,7 +230,7 @@ class Miner:
 				if diff > 0 and node_id not in self.node_pool:
 					connect_message = Message('CONNECT_REQUEST', [self.id, ref_node_id, self.lock, self.message_queue])			
 					lock, Q =  reply_node_pool[node_id][0]
-					self.send_message(connect_message, node_id, lock, Q)
+					self.send_message(node_id, connect_message, lock, Q)
 					diff -= 1
 
 	def new_transaction(self, transaction):
@@ -228,7 +257,7 @@ class Miner:
 			if node_id == sender_node_id:
 				continue
 			m = Message('NEW_BLOCK', [creator_node_id, self.id, deepcopy(block)])
-			self.send_message(m, node_id)
+			self.send_message(node_id, m)
 
 	def new_block(self, message):
 		# this method is used when receiving a new_block message.
