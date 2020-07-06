@@ -20,31 +20,27 @@ def checksig(stack, transaction, index):
 	return stack
 
 def dup(stack):
-	stack.append(str(stack[-1]))
+	stack.append(str((stack[-1].e,stack[-1].n)))
 	return stack
 
 def equal(stack):
 	arg1 = stack.pop()
 	arg2 = stack.pop()
-	if arg1 == arg2:
-		stack.append(True)
-	else:
-		stack.append(False)
+	if arg1 != arg2:
+		return False
 	return stack
 
 def verify(stack):
 	if stack[-1] == True:
-		return 1
+		return True
 	else:
-		return 0
+		return False
 
 def hash256(stack):
 	# compute hash (SHA-256) of the TOS and place is back
 	# m = stack.pop()
 	# stack.append(generate_hash(m))
-	m = hashlib.sha256()
-	m.update(bytes(stack.pop(), encoding='UTF-8'))
-	stack.append(m.hexdigest())
+	stack.append(hex(generate_hash(stack.pop())))
 	return stack
 
 
