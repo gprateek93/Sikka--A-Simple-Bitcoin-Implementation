@@ -2,7 +2,7 @@ import Transaction
 from constants import merkle_arity
 class MerkleNode:
     def __init__(self, hash = ""):
-        self.hash = hash
+        self.hash = hash #hex string
         self.children  = []
 
 class MerkleTree:
@@ -15,15 +15,12 @@ class MerkleTree:
     def tx_nodes(self):
         tx_node_list = []
         for tx in self.transactions:
-            # node = MerkleNode(tx.hash)
-            node = MerkleNode(tx)
+            node = MerkleNode(tx.hash)
+            # node = MerkleNode(tx)
             tx_node_list.append(node)
         return tx_node_list
 
     def constructTree(self,tx_nodes = []):
-        print("printing")
-        for node in tx_nodes:
-            print(node.hash)
         if len(tx_nodes) == 1:
             self.root = tx_nodes[0]
             return
@@ -32,23 +29,21 @@ class MerkleTree:
         updated_nodes = []
         for i in range(0,len(tx_nodes) - m,airity):
             node = MerkleNode()
-            # hash = hex(0)
-            hash = ""
+            hash = hex(0)
             for j in range(0,airity):
-                hash += tx_nodes[i+j].hash[2:]
+                hash = hex(crypto.generate_hash(hash[2:] + tx_nodes[i+j][2:]))
                 node.children.append(tx_nodes[i+j])
             node.hash = hash
             updated_nodes.append(node)
         
         if m != 0:
             node = MerkleNode()
-            # hash = hex(0)
-            hash = ""
+            hash = hex(0)
             for i in range(m,0,-1):
-                hash += tx_nodes[-i].hash[2:]
+                hash = hex(crypto.generate_hash(hash[2:] + tx_nodes[-i][2:]))
                 node.children.append(tx_nodes[-i])
             for i in range(0,airity-m):
-                hash += tx_nodes[-1].hash[2:]
+                hash = hex(crypto.generate_hash(hash[2:] + tx_nodes[-1][2:]))
                 node.children.append(tx_nodes[-1])
             node.hash = hash
             updated_nodes.append(node)
