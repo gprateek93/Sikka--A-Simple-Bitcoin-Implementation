@@ -20,7 +20,7 @@ def checksig(stack, transaction, index):
 	return stack
 
 def dup(stack):
-	stack.append(stack[-1])
+	stack.append(str(stack[-1]))
 	return stack
 
 def equal(stack):
