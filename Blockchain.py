@@ -34,7 +34,7 @@ class Blockchain:
             return False
         parent_node = self.blockchain[prev_hash]
         tx_handler = TransactionHandler(parent_node.utxo_pool)
-        txs = block.get_all_transactions()
+        txs = block.get_all_transactions()[1:] #because the first transaction is the coinbase transaction
         validTXs = tx_handler.handleTxs(txs)
         #block gets verified here
         if len(validTXs) != len(txs) :
