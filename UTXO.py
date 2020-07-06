@@ -21,6 +21,9 @@ class UTXO:
 			if len(utxo_1.txn_hash) < len(utxo_2.txn_hash):
 				return True
 		return False
+
+	def __hash__(self):
+		return hash(self.hash_index_tup)
 			
 
 
