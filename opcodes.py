@@ -1,4 +1,4 @@
-# from crypto import generate_hash
+from crypto import generate_hash, verify_signature
 import hashlib
 # to add an opcode:
 # add it to the opcode list
@@ -6,18 +6,18 @@ import hashlib
 # add the function mapping in opcode2method dictionary at the end of the file
 #create method to execute the script which takes the transaction also as input.
 
-opcode_list = ['OP_CHECKSIG', 'OP_EQUAL', 'OP_DUP', 'OP_HASH160', 'OP_VERIFY', 'OP_EQAULVERIFY', 'OP_CHECKMULTISIG']
+opcode_list = ['OP_CHECKSIG', 'OP_EQUAL', 'OP_DUP', 'OP_HASH256', 'OP_VERIFY', 'OP_EQAULVERIFY', 'OP_CHECKMULTISIG']
 
 def is_op(word):
 	if word in opcode_list:
 		return True
 	return False
 
-# def checksig(stack):
-# 	public_key = stack.pop()
-# 	signature = stack.pop()
-	
-# 	return stack
+def checksig(stack, transaction, index):
+	public_key = stack.pop()
+	signature = stack.pop()
+	stack.append(verify_signature(transaction.get_raw_signature(index), public_key, signature))
+	return stack
 
 def dup(stack):
 	stack.append(stack[-1])
@@ -38,7 +38,7 @@ def verify(stack):
 	else:
 		return 0
 
-def hash160(stack):
+def hash256(stack):
 	# compute hash (SHA-256) of the TOS and place is back
 	# m = stack.pop()
 	# stack.append(generate_hash(m))
@@ -51,9 +51,9 @@ def hash160(stack):
 opcode2method = {
 				 'OP_EQUAL' : equal, 
 				 'OP_DUP' : dup, 
-				 'OP_HASH160' : hash160, 
+				 'OP_HASH256' : hash256, 
 				 'OP_VERIFY' : verify, 
-				#  'OP_CHECKSIG' : checksig, 
+				 'OP_CHECKSIG' : checksig 
 				#  'OP_EQAULVERIFY' : equalverify, 
 				#  'OP_CHECKMULTISIG' : checkmultisig
 				}
