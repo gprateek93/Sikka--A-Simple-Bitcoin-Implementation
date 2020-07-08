@@ -1,20 +1,21 @@
 from constants import mining_effort, num_block_txns, max_neighbours
 from crypto import generate_key
-from MessageClass import Message
+from MessageClass import Message, Message_Queue
 import Block
 import TransactionHandler as TxnH
 import logging
-
+from merkel import MerkleTree
 from copy import deepcopy # check if deep copy works for classes and if it doesn't create a function in blockchain to give a copy of it
-from collections import deque
 import threading as th
 from threading import Lock, Thread
 
 class Miner:
-	def __init__(self, blockchain, miner_id, seed_node_pool, node_type):
+	def __init__(self, blockchain, miner_id, seed_node_pool, node_type, genesis_miner=False):
 
 		self.id  = miner_id # for logging
-		assert blockchain != None, 'Empty Blockchain received' 
+		if not genesis_miner:
+			assert blockchain != None, 'Empty Blockchain received' 
+
 		self.blockchain = deepcopy(blockchain)
 		self.pending_txn_pool = []
 		self.key_pair = generate_key()
@@ -25,15 +26,16 @@ class Miner:
 		# That means no need for node pool
 		self.node_pool = dict({}) # Nodes connected with this miner
 		self.seed_node_pool = seed_node_pool
-		self.message_queue = deque()
+		self.message_queue = Message_Queue()
 		self.lock = Lock()
 		self.__type = node_type # "SEED" / "NON-SEED"
 		self.received_blocks = set()
 		
-		self.consensus_thread_pool = dict({}) # node_id : thread_obj
+		self.consensus_event_pool = dict({}) # node_id : thread_obj
 		self.run = 1
 		logging.basicConfig(filename=f'LOG-MINER-{self.id}.log', level=logging.DEBUG, format='%(asctime)s : %(levelname)s :Process- %(process)d %(processName)s: Thread- %(thread)d %(threadName)s: %(funcName)s : %(message)s')
 		logging.info(f'Miner {self.id} object Created')
+
 
 	# this is the function that will be called to run by the process
 	def spawn(self):
@@ -102,7 +104,6 @@ class Miner:
 		return current_block
 
 
-
 	def find_block(self):		
 		# create the block to be mined
 		# look in block handler and see if anything else is needed in the args
@@ -152,24 +153,24 @@ class Miner:
 		## Broadcast newly mined Block: (NEW_BLOCK, Creator_NodeID, Sender_node_id, Block) 
 		
 		# check messages
-		if len(self.message_queue) == 0:
+		if self.message_queue.empty():
 			return None
 		self.lock.acquire()
-		message = self.message_queue.popleft()
+		message = self.message_queue.pop_message()
 		self.lock.release()
 
 		if message.id == 'CONNECT_REQUEST':
-			connect_request(message)
+			self.connect_request(message)
 		elif message.id == 'CONNECT_REPLY':
-			connect_reply(message)
+			self.connect_reply(message)
 		elif message.id == 'NEW_TRANSACTION':
-			new_transaction(message.args[0])
+			self.new_transaction(message.args[0])
 		elif message.id == 'REQUEST_BLOCKCHAIN':
-			request_blockchain(message.args[0], message.args[1])
+			self.request_blockchain(message.args[0], message.args[1])
 		elif message.id == 'REPLY_BLOCKCHAIN':
-			reply_blockchain(message)
+			self.reply_blockchain(message)
 		elif message.id == 'NEW_BLOCK':
-			new_block(message) # what all things do we need to check for?
+			self.new_block(message) # what all things do we need to check for?
 			# do we need the public key?
 			# is there a method to add block to block chain?
 		else:
@@ -194,7 +195,7 @@ class Miner:
 				print(f'{self.id} can not send {message} to {node_id}: Lock/Queue missing')
 				return None
 		lock.acquire()
-		Q.append(message)
+		Q.add_message(message)
 		lock.release()
 
 	def connect_request(self, message):
@@ -215,7 +216,7 @@ class Miner:
 
 	def connect_reply(self, message):
 		# Add the replying node to your pool 
-		ref_node_id, blockchain, reply_node_pool, new_node_lock, new_node_message_queue = message.args
+		new_node_id, blockchain, reply_node_pool, new_node_lock, new_node_message_queue = message.args
 		self.node_pool[new_node_id] = (new_node_lock, new_node_message_queue)
 
 		# if your blockchain is None add reply_blockchain
@@ -228,7 +229,7 @@ class Miner:
 			diff =  max_neighbours - len(self.node_pool) 
 			for node_id in reply_node_pool:
 				if diff > 0 and node_id not in self.node_pool:
-					connect_message = Message('CONNECT_REQUEST', [self.id, ref_node_id, self.lock, self.message_queue])			
+					connect_message = Message('CONNECT_REQUEST', [self.id, new_node_id, self.lock, self.message_queue])			
 					lock, Q =  reply_node_pool[node_id][0]
 					self.send_message(node_id, connect_message, lock, Q)
 					diff -= 1
@@ -239,10 +240,8 @@ class Miner:
 
 	def request_blockchain(self, node_id, req_num):
 		if node_id in self.node_pool:
-			lock, Q = self.node_pool[node_id]
-			lock.acquire()
-			Q.append(Message('REPLY_BLOCKCHAIN', [self.id, deepcopy(self.blockchain), req_num]))
-			lock.release()
+			m = Message('REPLY_BLOCKCHAIN', [self.id, deepcopy(self.blockchain), req_num])
+			self.send_message(node_id, m)
 		# else:
 		# 	print('node not in node pool, How did it send me a message?')
 	
@@ -276,7 +275,8 @@ class Miner:
 			if not self.blockchain.contains_block(block):
 				self.blockchain.addBlock(block)
 				
-
+	def get_address(self):
+		return self.public_key
 	
 	
 
