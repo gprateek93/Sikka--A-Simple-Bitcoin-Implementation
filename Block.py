@@ -1,7 +1,7 @@
 from Transaction import Transaction
 from merkle import MerkleTree
 import crypto
-from constants import miner_reward
+from constants import miner_reward,genesis_prev_block_hash
 import Miner
 import logging
 
@@ -16,7 +16,7 @@ class Block:
 			self.__hash = None
 			self.__merkle_tree_root = None
 			self.__nonce = 0
-			self.__prev_block_hash = None
+			self.__prev_block_hash = genesis_prev_block_hash
 			logging.info(f"Genesis block created")
 		else:
 			self.__hash = None
