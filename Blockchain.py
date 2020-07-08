@@ -1,7 +1,7 @@
 import UTXO
 import UTXO_pool
 import TransactionHandler
-from constants import max_branch_len_diff
+from constants import max_branch_len_diff,mining_effort,genesis_prev_block_hash
 # TODO Create a replace blockchain method. See Miner.consensus()
 # TODO Create a method Blockchain.contains_block(block) which returns True if block is added in block chain
 class Blockchain:
@@ -20,17 +20,19 @@ class Blockchain:
     def __init__(self, genesis_block = None):
         self.blockchain = dict({})
         utxo_pool = UTXO_pool()
-        self.addcoinbasetx(genesis_block,utxo_pool)
+        self.add_coinbase_tx(genesis_block,utxo_pool)
         genesis_node = Blockchain.BlockNode(block= genesis_block, utxo_pool= utxo_pool)
         self.maxheightnode = genesis_node
         self.blockchain[genesis_block.get_hash()] = genesis_node
 
 
-    def addBlock(self, block = None):
+    def add_block(self, block = None, proof= None):
         prev_hash = block.get_prev_block_hash()
         if prev_hash == None:
             return False
         if prev_hash not in self.blockchain:
+            return False
+        if not self.is_valid_proof(block,proof):
             return False
         parent_node = self.blockchain[prev_hash]
         tx_handler = TransactionHandler(parent_node.utxo_pool)
@@ -43,7 +45,7 @@ class Blockchain:
         if (height <= self.maxheightnode.height - max_branch_len_diff):
             return False
         utxo_pool = tx_handler.utxo_pool
-        self.addcoinbasetx(block=block, utxo_pool=utxo_pool)
+        self.add_coinbase_tx(block=block, utxo_pool=utxo_pool)
         block_node = Blockchain.BlockNode(block=block, parent=parent_node, utxo_pool=utxo_pool)
         if height > self.maxheightnode.height:
             self.maxheightnode = block_node
@@ -56,7 +58,7 @@ class Blockchain:
     def get_max_height_node_UTXO_pool(self):
         return self.maxheightnode.utxo_pool     
 
-    def addcoinbasetx(self,block = None, utxo_pool = None):
+    def add_coinbase_tx(self,block = None, utxo_pool = None):
         coinbase = block.get_coinbase_txn()
         for i in coinbase.total_outputs():
             out = coinbase.getOutput(i)
@@ -71,3 +73,21 @@ class Blockchain:
                 return True
             else:
                 return False
+
+    def is_valid_proof(self, block, block_hash):
+        return (block_hash[2:].startswith('0' * mining_effort) and block.get_hash() == block_hash)
+
+    def is_valid_chain(self):
+        prev_block_hash = genesis_prev_block_hash
+        for current_block_hash in self.blockchain:
+            current_block = self.blockchain[current_block_hash].block
+            if current_block.get_prev_block_hash() != prev_block_hash:
+                return False
+            delattr(current_block,__hash)
+            current_block.finalize()
+            recomputed_current_hash = current_block.get_hash()
+            if not self.is_valid_proof(current_block,recomputed_current_hash):
+                return False
+            prev_block_hash = recomputed_current_hash
+
+        return True
