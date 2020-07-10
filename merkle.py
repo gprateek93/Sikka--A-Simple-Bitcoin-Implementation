@@ -1,5 +1,6 @@
 import Transaction
 from constants import merkle_arity
+import crypto
 class MerkleNode:
     def __init__(self, hash = ""):
         self.hash = hash #hex string
@@ -31,7 +32,7 @@ class MerkleTree:
             node = MerkleNode()
             hash = hex(0)
             for j in range(0,airity):
-                hash = hex(crypto.generate_hash(hash[2:] + tx_nodes[i+j][2:]))
+                hash = hex(crypto.generate_hash(hash[2:] + tx_nodes[i+j].hash[2:]))
                 node.children.append(tx_nodes[i+j])
             node.hash = hash
             updated_nodes.append(node)
@@ -40,10 +41,10 @@ class MerkleTree:
             node = MerkleNode()
             hash = hex(0)
             for i in range(m,0,-1):
-                hash = hex(crypto.generate_hash(hash[2:] + tx_nodes[-i][2:]))
+                hash = hex(crypto.generate_hash(hash[2:] + tx_nodes[-i].hash[2:]))
                 node.children.append(tx_nodes[-i])
             for i in range(0,airity-m):
-                hash = hex(crypto.generate_hash(hash[2:] + tx_nodes[-1][2:]))
+                hash = hex(crypto.generate_hash(hash[2:] + tx_nodes[-1].hash[2:]))
                 node.children.append(tx_nodes[-1])
             node.hash = hash
             updated_nodes.append(node)
