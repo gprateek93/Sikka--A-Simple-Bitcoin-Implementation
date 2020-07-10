@@ -8,8 +8,8 @@ from UTXO_pool import UTXO_pool
 from UTXO import UTXO
 
 class TransactionHandler:
-    def __init__(self, utxopool):
-        self.utxopool = utxopool
+    def __init__(self, utxo_pool):
+        self.utxo_pool = utxo_pool
 
     def isValidTx(self, tx):
         unique_utxo = UTXO_pool()
@@ -18,9 +18,9 @@ class TransactionHandler:
         for i in range(tx.total_inputs()):
             inp = tx.get_input(i)
             utxo = UTXO(inp.prev_hash, inp.index)
-            if not self.utxopool.has_utxo(utxo):
+            if not self.utxo_pool.has_utxo(utxo):
                 return False
-            out = self.utxopool.mappings[utxo]
+            out = self.utxo_pool.mappings[utxo]
             verification_script = inp.unlocking_script + out.locking_script + ["OP_VERIFY"]
             if not script.execute_script(verification_script,tx,i):
                 return False
@@ -39,16 +39,17 @@ class TransactionHandler:
             
     def handleTxs(self, transactions=[]):
         validTX = []
+        i = 0
         for tx in transactions:
             if(self.isValidTx(tx)):
                 validTX.append(tx)
                 for inp in tx.inputs:
                     utxo = UTXO(inp.prev_hash, inp.index)
-                    self.utxopool.delete_utxo(utxo)
+                    self.utxo_pool.delete_utxo(utxo)
                 for i in range(tx.total_outputs()):
                     utxo = UTXO(tx.get_hash(), i)
-                    self.utxopool.add_UTXO(utxo,tx.get_output(i))
-        
+                    self.utxo_pool.add_UTXO(utxo,tx.get_output(i))
+            i+=1
         validTX = list(set(validTX))
         return validTX
         
