@@ -21,7 +21,7 @@ class Block:
 		else:
 			self.__hash = None
 			self.__prev_block_hash = prev_hash
-			self.__coinbase_txn = Transaction(miner_reward, address)
+			self.__coinbase_txn = Transaction(coin=miner_reward, address=address)
 			self.__coinbase_txn.finalize()
 			self.__txns = [self.__coinbase_txn]
 			self.__merkle_tree_root = None
