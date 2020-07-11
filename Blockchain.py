@@ -3,12 +3,9 @@ from UTXO_pool import UTXO_pool
 from TransactionHandler import TransactionHandler
 from constants import max_branch_len_diff,mining_effort,genesis_prev_block_hash
 from Block import Block
-from Miner import Miner
 import logging
 import crypto
 from Transaction import Transaction
-# TODO Create a replace blockchain method. See Miner.consensus()
-# TODO Create a method Blockchain.contains_block(block) which returns True if block is added in block chain
 
 
 class Blockchain:
