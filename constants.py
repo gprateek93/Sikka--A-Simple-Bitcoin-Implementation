@@ -5,5 +5,5 @@ merkle_arity = 2
 num_block_txns = 10
 num_non_seed_nodes = 2
 num_seed_nodes = 2
-max_neighbours = num_seed_nodes + num_non_seed_nodes//2
+min_neighbours = num_seed_nodes + num_non_seed_nodes//2
 genesis_prev_block_hash = hex(0)
