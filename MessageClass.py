@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-# from collections import deque
-from queue import Queue as Q
+from collections import deque
+# from queue import Queue as Q
 
 # Message Structure
 ## Connect Request: (CONNECT_REQEUST, Node ID, node.message_queue)
@@ -14,23 +14,39 @@ class Message:
 	id: str
 	args: []
 
-class Message_Queue:
+class Queue_Event_Lock:
 	def __init__(self):
-		self.q = Q()
-	
+		self.__q = deque()
+		self.__e = Event()
+		self.__lock = Lock()
+	def acquire(self):
+		return self.__lock.acquire()
+	def release(self):
+		return self.__lock.release()	
 	def pop_message(self):
-		return self.q.get()
-	
+		return self.__q.popleft()
 	def add_message(self, m):
-		self.q.put(m)
-		
+		self.__q.append(m)
 	def empty(self):
-		return self.q.empty()
+		if len(self.__q) == 0:
+			return True
+		return False
+	def isSet(self):
+		return self.__e.isSet()
+	def wait(self):
+		return self.__e.wait()
+	def set(self):
+		return self.__e.set()
+	def clear(self):
+		return self.__e.clear()
+
+	def __repr__(self):
+		return str(self.q)
 
 # class Message_Queue:
 # 	def __init__(self):
 # 		self.q = deque()
-	
+
 # 	def pop_message(self):
 # 		return self.q.popleft()
 	
@@ -42,4 +58,20 @@ class Message_Queue:
 # 			return True
 # 		return False
 
+# 	def __repr__(self):
+# 		return str(self.q)
+
+
+# class Manager_Message_Queue:
+# 	def __init__(self, Q):
+# 		self.q = Q
+	
+# 	def pop_message(self):
+# 		return self.q.get()
+	
+# 	def add_message(self, m):
+# 		self.q.put(m)
+		
+# 	def empty(self):
+# 		return self.q.empty()
 		
