@@ -1,4 +1,4 @@
-
+from collections import defaultdict as dd
 class UTXO_pool:
 	def __init__(self):
 		self.mappings = dict({})
@@ -18,3 +18,23 @@ class UTXO_pool:
 
 	def get_all_utxo(self):
 		return list(self.mappings.keys())
+	
+	# return dict with Key as public key of miner 
+	# and value as total unspent coins in that block
+	def get_total_unspent_coins(self):
+		total_unspent_coins = dd(int)
+		for utxo, op in self.mappings.items():
+			# for op in txn_outputs:
+			total_unspent_coins[op.pubkey_hash] += op.value
+		return total_unspent_coins
+
+	def get_total_unspent_utxo(self):
+		total_unspent_utxo = dd(list)
+		for utxo, op in self.mappings.items():
+			# for op in txn_outputs:
+			total_unspent_utxo[op.pubkey_hash].append((utxo,op.value))
+		return total_unspent_utxo
+
+
+
+	
