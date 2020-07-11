@@ -11,6 +11,7 @@ class MerkleTree:
         self.airity = merkle_arity
         self.transactions = transactions
         node_list = self.tx_nodes()
+        self.root = None 
         self.constructTree(node_list)
 
     def tx_nodes(self):
