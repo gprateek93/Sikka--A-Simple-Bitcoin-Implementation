@@ -1,4 +1,5 @@
 from functools import total_ordering
+import sys
 
 @total_ordering
 class UTXO:
@@ -24,6 +25,10 @@ class UTXO:
 
 	def __hash__(self):
 		return hash(self.hash_index_tup)
+	
+	def __sizeof__(self):
+		return sys.getsizeof(self.txn_hash) + sys.getsizeof(self.index) + sys.getsizeof(self.hash_index_tup)
+
 			
 
 

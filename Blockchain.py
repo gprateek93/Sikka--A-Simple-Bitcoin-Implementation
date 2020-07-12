@@ -6,6 +6,7 @@ from Block import Block
 import logging
 import crypto
 from Transaction import Transaction
+import sys
 
 
 class Blockchain:
@@ -20,6 +21,9 @@ class Blockchain:
 				parent.children.append(self)
 			else:
 				self.height = 1
+		
+		def __sizeof__(self):
+			return sys.getsizeof(self.block) + sys.getsizeof(self.parent) + sys.getsizeof(self.utxo_pool) + sys.getsizeof(self.children) + sys.getsizeof(self.height)
 
 	def __init__(self, genesis_block = None):
 		self.blockchain = dict({})
@@ -101,4 +105,10 @@ class Blockchain:
 			prev_block_hash = recomputed_current_hash
 
 		return True
+
+	def __sizeof__(self):
+		size = 0
+		for current_block_hash in self.blockchain:
+			size += sys.getsizeof(self.blockchain[current_block_hash])
+		return size
 		

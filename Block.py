@@ -4,6 +4,7 @@ import crypto
 from constants import miner_reward,genesis_prev_block_hash
 import Miner
 import logging
+import sys
 
 
 class Block:
@@ -75,3 +76,6 @@ class Block:
 
 	def finalize(self):
 		self.__hash = hex(crypto.generate_hash(self.get_raw_block()))
+
+	def __sizeof__(self):
+		return sys.getsizeof(self.get_raw_block())

@@ -1,5 +1,6 @@
 import crypto
 import logging
+import sys
 
 logging.basicConfig(filename=f'LOG-Transaction.log', level=logging.DEBUG, format='%(asctime)s : %(levelname)s :Process- %(process)d %(processName)s: Thread- %(thread)d %(threadName)s: %(funcName)s : %(message)s')
 class Transaction:
@@ -39,6 +40,9 @@ class Transaction:
             if self.value == other.value and self.locking_script == other.locking_script:
                 return True
             return False
+        
+        def __sizeof__(self):
+            return sys.getsizeof(self.value) + sys.getsizeof(self.pubkey) + sys.getsizeof(self.pubkey_hash) + sys.getsizeof(self.locking_script)
 
     def __init__(self,version = 0,lock_time = 0, coin = -1, address = None):
         if(coin == -1):
@@ -141,3 +145,6 @@ class Transaction:
 
     def __hash__(self):
         return int(self.hash,16)
+
+    def __sizeof__(self):
+        return sys.getsizeof(self.get_raw_txn())

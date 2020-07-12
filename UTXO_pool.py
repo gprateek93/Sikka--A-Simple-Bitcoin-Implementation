@@ -1,4 +1,6 @@
 from collections import defaultdict as dd
+import sys
+
 class UTXO_pool:
 	def __init__(self):
 		self.mappings = dict({})
@@ -34,6 +36,11 @@ class UTXO_pool:
 			# for op in txn_outputs:
 			total_unspent_utxo[op.pubkey_hash].append((utxo,op.value))
 		return total_unspent_utxo
+
+	def __sizeof__(self):
+		size = 0
+		for key in self.mappings.keys():
+			size += sys.getsizeof(key) + sys.getsizeof(self.mappings[key])
 
 
 
