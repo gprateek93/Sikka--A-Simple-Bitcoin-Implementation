@@ -9,6 +9,8 @@ Nodes are implemented as separate processes each running 3 threads in parallel, 
 ## Structure
 Each of the transactions has two main classes, Input and Output. The Input class objects are maintained to keep track of inputs to the transaction. These inputs refer previous hash and output indices, stored in an unspent transactions pool of block. The outputs are specified by the address of the receiver and the value of the transaction. After adding these inputs and outputs, for each input a signature is generated and the transaction is signed for that particular input.
 <br> A transaction can be either a coin-base transaction or a normal transaction. A coin-base transaction is made whenever someone makes a new block. Every unspent transaction(UTXO) in a block gets into the unspent transaction pool of that block (UTXO Pool). Each unspent transaction is a pair of previous transaction hash and output index which is mapped to a transaction output object in UTXO pool.
+<br>![Figure 1. The parts of a Transaction](/Images/Transactions.png)
+<br>*Figure 1. The parts of a Transaction*
 ## Transaction Verification
 Each and every transaction is verified using a TransactionHandler object. This object checks the validity of the transaction by checking three things:  
 1. Each of the inputs must refer some entry in the UTXO pool of the block.
